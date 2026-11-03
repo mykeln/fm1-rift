@@ -1,12 +1,8 @@
 # RIFT for the M-VAVE FM-1
 
-[![RIFT host checks](https://github.com/mykeln/fm1-rift/actions/workflows/ci.yml/badge.svg)](https://github.com/mykeln/fm1-rift/actions/workflows/ci.yml)
+Experimental drone firmware, heavily inspired by the dystopian sounds of the VHIKK-X, by FORGE TME. This firwmare is a heavily modified version of  [Felucca](https://github.com/hugelton/Felucca).
 
-Experimental drone firmware by **mykeln**, built on [Felucca](https://github.com/hugelton/Felucca). Nine original modes combine oscillator pairs and clusters, phase/ring modulation, filtering, stereo delay/scattering feedback and frequency translation, inspired by the public behavior documentation of the FORGE TME VHIKK-X.
-
-**Development status: RIFT 0.2 is host tested; on-device confirmation is pending.** RIFT 0.1 booted on an FM-1, with USB CDC reporting 36% CPU, zero late audio blocks and zero shed voices. Those observations do not establish reliability of the current update, persistence or recovery. No downloadable firmware release is offered yet. This is an initial approximation, not a verified VHIKK-X emulation.
-
-This is RIFT **by mykeln**; it is separate from [Vaayaa's RIFT firmware](https://github.com/Vaayaa/rift-fw).
+Nine original modes combine oscillator pairs and clusters, phase/ring modulation, filtering, stereo delay/scattering feedback and frequency translation.
 
 ## Sound and controls
 
