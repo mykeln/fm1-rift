@@ -5,11 +5,11 @@ RIFT by mykeln is an experimental source project. RIFT 0.1 booted on hardware; 0
 ## Repository and source listings
 
 - Repository: https://github.com/mykeln/fm1-rift
-- Awesome FM-1: submission pending.
-- aroum FM1 resources: submission pending.
-- FM1 Editor: watch-list request pending.
-- FM-1 Firmware Atlas: submission pending.
-- FM-1 Firmware Collection: catalog request pending.
+- Awesome FM-1: [PR #14](https://github.com/cicloid/awesome-fm-1/pull/14), submitted.
+- aroum FM1 resources: [PR #23](https://github.com/aroum/fm1-custom-fw/pull/23), submitted.
+- FM1 Editor: [watch-list request #446](https://github.com/benny-sparra/fm1-dx7-patch-importer/issues/446), submitted.
+- FM-1 Firmware Atlas: [PR #2](https://github.com/wero1414/atlas-fm-1/pull/2), submitted.
+- FM-1 Firmware Collection: [PR #1](https://github.com/2bbb/fm1-firmware-collection/pull/1), submitted for catalog inclusion with automatic builds disabled.
 - The Firmware Hub: not submitted; hardware requirements below remain open.
 
 See [primary-source research](publication-research.md) for submission routes and requirements. Maintainers control acceptance; a submitted request is not an accepted listing.
