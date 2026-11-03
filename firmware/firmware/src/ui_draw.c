@@ -1605,6 +1605,9 @@ static void style_apply(void)
     }
 }
 
+#if FELUCCA_RIFT
+#include "rift_ui_draw.c"
+#endif
 static void ui_draw_page(uint32_t counting);
 static void ui_draw(void)
 {
@@ -1622,6 +1625,9 @@ static void ui_draw(void)
 }
 static void ui_draw_page(uint32_t counting)
 {
+#if FELUCCA_RIFT
+    if (!ui.uboot && rift_home()) { rift_draw(); return; }
+#endif
     if (ui.uboot) {
         draw_uboot();
         draw_head();

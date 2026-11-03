@@ -1,0 +1,73 @@
+#!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-3.0-only
+"""Collect a local review bundle. Never opens a MIDI/USB port."""
+import hashlib
+import json
+import shutil
+import subprocess
+import tarfile
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+FW = ROOT / "firmware"
+OUT = ROOT / "dist"
+VERSION = "0.2"
+
+
+def git(*args):
+    return subprocess.check_output(["git", *args], cwd=ROOT)
+
+
+def main():
+    package = FW / "build/felucca.fwsc"
+    if not package.is_file():
+        raise SystemExit("Build the FM1 package first (sh rift.sh build).")
+    OUT.mkdir(exist_ok=True)
+    shutil.copy2(package, OUT / f"rift-{VERSION}.fwsc")
+    shutil.copy2(FW / "docs/RIFT.md", OUT / "RIFT.md")
+    for name in ("LICENSE", "LICENSING.md"):
+        shutil.copy2(ROOT / name, OUT / name)
+    shutil.copy2(FW / "LICENSING.md", OUT / "FELUCCA-LICENSING.md")
+    shutil.copytree(FW / "LICENSES", OUT / "LICENSES", dirs_exist_ok=True)
+    for subdir, pattern in (("audio", "*.wav"), ("screens", "*.png")):
+        dest = OUT / subdir
+        dest.mkdir(exist_ok=True)
+        for source in (FW / "build/rift-demo").glob(pattern):
+            shutil.copy2(source, dest / source.name)
+    for name in ("rift-build.log", "rift-test.log", "rift-controls-test.log", "install-test.log", "project-test.log"):
+        source = FW / "build" / name
+        if source.is_file():
+            shutil.copy2(source, OUT / name)
+    # Include both pinned dependencies; GitHub's automatic archives omit submodules.
+    # This local review snapshot uses tracked working files; source_dirty records edits.
+    source_archive = OUT / f"rift-{VERSION}-source.tar.gz"
+    names = git("ls-files", "--recurse-submodules", "-z").decode().split("\0")
+    with tarfile.open(source_archive, "w:gz") as archive:
+        for name in filter(None, names):
+            archive.add(ROOT / name, arcname=f"rift-{VERSION}/{name}", recursive=False)
+    manifest = {
+        "name": "RIFT", "version": VERSION, "status": "experimental; host tested; this update not installed by agent",
+        "base_repository": "https://github.com/hugelton/Felucca",
+        "base_commit": "743551712c36b3984392eea1dbe13a309907e17a",
+        "source_commit": git("rev-parse", "HEAD").decode().strip(),
+        "source_dirty": bool(git("status", "--porcelain")),
+        "submodules": git("submodule", "status").decode().strip().splitlines(),
+        "package_identity": "FM-1_900", "connected_device_version_read": "RIFT 0.1 (USB CDC)",
+        "hardware_observation": {"version": "RIFT 0.1", "cpu_pct": 36, "audio_late": 0, "voices_shed": 0},
+        "device_writes_performed": False,
+        "build": {"command": "sh rift.sh build", "sdk_tag": "AC79NN_SDK_V1.2.1_2023-12-13",
+                  "toolchain": "jieli-linux-toolchains-20260730.1", "docker_context": "colima-fm1-build"},
+        "package_sha256": hashlib.sha256(package.read_bytes()).hexdigest(),
+        "source_archive_sha256": hashlib.sha256(source_archive.read_bytes()).hexdigest(),
+    }
+    (OUT / "build.json").write_text(json.dumps(manifest, indent=2) + "\n")
+    sums = []
+    for source in sorted(OUT.rglob("*")):
+        if source.is_file() and source.name != "SHA256SUMS":
+            sums.append(f"{hashlib.sha256(source.read_bytes()).hexdigest()}  {source.relative_to(OUT)}")
+    (OUT / "SHA256SUMS").write_text("\n".join(sums) + "\n")
+    print(f"Review bundle: {OUT}\nFirmware SHA-256: {manifest['package_sha256']}")
+
+
+if __name__ == "__main__":
+    main()

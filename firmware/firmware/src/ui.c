@@ -1390,6 +1390,9 @@ static void apply_preset_to(track_t *t, uint32_t pi)
             t->p[P_DIST + i] = (int16_t)(pr->fx[i] ? pr->fx[i] - 1 : FX_DEF[i]);
     }
     fm6_track_loaded(t);                              /* FM6: the preset's patch (its SLOT) */
+#if FELUCCA_RIFT
+    if (t->eng_req == ENGI_RIFT) { t->p[P_AHOLD] = 1; t->p[P_LPHASE] = 24; t->p[P_LRATE] = 48; }
+#endif
     load_end(t);
 }
 

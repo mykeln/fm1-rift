@@ -1,63 +1,56 @@
-# Felucca
+# RIFT for the M-VAVE FM-1
 
-[![License: GPL-3.0-only](https://img.shields.io/badge/license-GPL--3.0--only-blue.svg)](LICENSE)
+[![RIFT host checks](https://github.com/mykeln/fm1-rift/actions/workflows/ci.yml/badge.svg)](https://github.com/mykeln/fm1-rift/actions/workflows/ci.yml)
 
-![Felucca screens: HOME, tracks, WHEEL, FM6, slices, piano roll, drum grid and song](docs/screens.png)
+Experimental drone firmware by **mykeln**, built on [Felucca](https://github.com/hugelton/Felucca). Nine original modes combine oscillator pairs and clusters, phase/ring modulation, filtering, stereo delay/scattering feedback and frequency translation, inspired by the public behavior documentation of the FORGE TME VHIKK-X.
 
-## Overview
+**Development status: RIFT 0.2 is host tested; on-device confirmation is pending.** RIFT 0.1 booted on an FM-1, with USB CDC reporting 36% CPU, zero late audio blocks and zero shed voices. Those observations do not establish reliability of the current update, persistence or recovery. No downloadable firmware release is offered yet. This is an initial approximation, not a verified VHIKK-X emulation.
 
-Felucca is an open-source synthesizer firmware project that began as custom firmware for the M-VAVE FM-1.
+This is RIFT **by mykeln**; it is separate from [Vaayaa's RIFT firmware](https://github.com/Vaayaa/rift-fw).
 
-Originally developed for a single instrument, Felucca is evolving toward a multi-platform architecture, separating its synthesis engines from hardware-specific implementations. The aim is to make its instruments and sound engines adaptable to different hardware platforms without committing to specific ports or release schedules.
+## Sound and controls
 
-### M-VAVE FM-1
+Modes: **PAIR, FOLD, SINES, WAVES, CHORD, CLUSTER, PARTIAL, CROSS and CAVERN**. RIFT occupies part 1 and owns the stereo output while active. Felucca supplies hardware support, USB MIDI/audio, storage, the updater and recovery entry.
 
-The FM-1 firmware is currently at version 1.8.1 (1.9.0, with plugin engines, is in beta). Connect the FM-1 to a computer by USB, open the
-[web installer](https://hugelton.github.io/Felucca/) in Chrome or Edge and press Install; no extra hardware is needed.
-Installing is at your own risk: M-VAVE's updater or the installer's **Return to official V15** takes you back.
-[Try it in your browser](https://hugelton.github.io/Felucca/webapp/try/), no FM-1 needed.
+SELECT sets root pitch, ALGORITHM chooses a mode, PRESETS recalls one of three sounds per mode. ENV/EDIT, FX and LFO select the three macro pages; K1–K4 edit the active page. ARP toggles drone/keyed operation; REC varies SEED/SCAN; the master volume pot keeps its usual function. See the [RIFT guide](firmware/docs/RIFT.md) for every control, MIDI CC, implementation detail and known limit, and the [reference research](docs/vhikk-x-reference.md) for the documented inspiration.
 
-- Install: [web installer](https://hugelton.github.io/Felucca/)
-- Edit: [web editor](https://hugelton.github.io/Felucca/webapp/editor/) ([Felucca-WebApp](https://github.com/hugelton/Felucca-WebApp))
-- Read: the manual and the release notes are in the [wiki](https://github.com/hugelton/Felucca/wiki/Home)
-- Build: [BUILDING.md](BUILDING.md)
-- Platforms: the FM-1 (the reference; every release is tested on it) · the browser · a desktop with SDL2 (beta) · a
-  libretro core (beta). The same sources on each, with a simulated FM-1 for the platforms that are not one:
-  [platforms/](platforms/README.md), [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), [docs/PORTING.md](docs/PORTING.md).
-- Plugins (from 1.9): sound engines that anyone can make and install without building a firmware:
-  [docs/PLUGINS.md](docs/PLUGINS.md).
-- Compatibility: what an update keeps (saved work, the controls, the plugin interface): [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md).
-- Related: [Felucca-Engines](https://github.com/hugelton/Felucca-Engines) (the ANALOG, LOFI, TRIO, WHEEL, NOISE and PHASE engines and the plugin interface, MIT; still maintained) ·
-  [felucca-bsp](https://github.com/hugelton/felucca-bsp) (the FM-1 hardware layer, MPL-2.0; Felucca builds on it from 1.7.0)
+## Get the source and run host tests
 
-## Platform Support
+```sh
+git clone --recurse-submodules https://github.com/mykeln/fm1-rift.git
+cd fm1-rift
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
+sh rift.sh test
+```
 
-| Platform | Status | Notes |
-| --- | --- | --- |
-| M-VAVE FM-1 | Supported | The original platform; firmware and web installer available. |
-| Browser | Supported | [Try it](https://hugelton.github.io/Felucca/webapp/try/), no FM-1 needed. |
-| Desktop (SDL2) | Beta | Source only, in [platforms/sdl](platforms/sdl/README.md); run on macOS so far, Linux next. |
-| libretro (RetroArch) | Beta | Source only, in [platforms/libretro](platforms/libretro/README.md); run in RetroArch on macOS so far. |
-| devkitPro (libctru) | Studied | Research only; nothing published. |
-| M5Stack CoreS3 | In progress | Runs on the device; not published yet. |
-| M-VAVE SMK-37 | Proposed | A board in [felucca-bsp#13](https://github.com/hugelton/felucca-bsp/issues/13); untested. |
-| Other hardware | Not yet supported | Ports are welcome! Linux-based devices: see the [FAQ](https://github.com/hugelton/Felucca/wiki/FAQ). |
+Host tests need a C compiler and Python 3. They generate headers, run RIFT integration tests under AddressSanitizer/UndefinedBehaviorSanitizer, and render nine short stereo WAV previews and screen captures into `firmware/build/rift-demo/`. CI also checks the installer against simulated hardware. Host tests do not establish real-device performance.
 
-Felucca began on the FM-1, but it is not intended to stay there. Contributions and ports to other platforms are very welcome. If you are interested in bringing Felucca to another device, feel free to open an issue or pull request to discuss it. No specific future ports or release dates are promised.
+For an existing clone, run `git submodule update --init --recursive`. The engine and board-support dependencies are pinned. GitHub's automatic source ZIP/tar downloads omit those dependencies; use a recursive Git clone.
 
-## AI disclaimer
+## Preview and build
 
-Felucca is developed with the assistance of AI coding agents (code, tests, documentation, translation, maintenance). The
-design, features, sound design and direction are the maintainer's or the community's, and no generative AI is used for music,
-icons or artwork. See [On AI-Assisted Development and Responsibility](https://github.com/hugelton/Felucca/discussions/166).
+```sh
+sh rift.sh preview    # desktop simulator; requires SDL2
+sh rift.sh build      # FM-1 build and local review bundle; requires JieLi tools/SDK
+```
 
-## Credits and licence
+Install SDL2 with `brew install sdl2` on macOS or `libsdl2-dev` on Debian/Ubuntu. The simulator uses its own flash file and starts with MIDI disabled.
 
-Free software: [GPL-3.0-only](LICENSE); the Hügelton Sample Pack is CC0 1.0; the engines in `firmware/engines` are MIT
-([Felucca-Engines](https://github.com/hugelton/Felucca-Engines)); the hardware layer in `firmware/bsp` is MPL-2.0
-([felucca-bsp](https://github.com/hugelton/felucca-bsp)); the bundled fonts and ported DSP keep their own licences
-([LICENSES/](LICENSES/), [LICENSING.md](LICENSING.md)). Thanks to everyone whose work and contributions are in it: [CREDITS.md](CREDITS.md).
+For the FM-1 build, follow [firmware/BUILDING.md](firmware/BUILDING.md) for the JieLi compiler, pinned AC79 SDK and Docker prerequisites. Run commands from `firmware/` when following that upstream guide. RIFT's wrapper respects `PYTHON`, `JIELI_TOOLCHAIN`, `AC79_SDK` and `DOCKER_CONTEXT`. Without local overrides, the underlying build uses `~/.jieli/toolchain` and `~/fw-AC79_AIoT_SDK`; Linux x86-64 runs the toolchain natively.
 
-M-VAVE and FM-1 are trademarks of their respective owners. Felucca is not affiliated with or endorsed by them.
+The original local setup keeps tools in `.tools/` and uses a Colima profile/context named `fm1-build` / `colima-fm1-build` on macOS. Those tools, the SDK, build products and `.venv/` are excluded from Git. They are not required for host tests. Start that VM with `colima start --profile fm1-build` if you use that setup.
 
-Copyright (C) 2026 Leo Kuroshita (@kurogedelic), Hügelton Instruments
+The local bundle is written to `dist/`. Packages still use the upstream development identity `FM-1_900`. A unique identity and real-device validation are required before a public installable release. Do not use Felucca's `--release` version numbering to publish RIFT packages: it assigns Felucca identities.
+
+## Hardware validation and publication
+
+Read the [hardware trial and rollback guide](firmware/docs/RIFT.md#hardware-trial-and-rollback) before considering installation. Installing may replace incompatible stored data. RIFT reuses Felucca's project formats, but cross-firmware project/sample compatibility and persistence have not been verified on hardware. Preserve your data and establish a recovery route first.
+
+[Publication tracking](docs/PUBLICATION.md) records directory submissions and the remaining release checks. [Directory research](docs/publication-research.md) links each maintainer's submission requirements. The Firmware Hub requires install/exit tests on a real device before listing; this project currently belongs in experimental source listings.
+
+## Contributing and licenses
+
+[Contributions and bug reports](CONTRIBUTING.md) are welcome. The modified Felucca source is under `firmware/`; upstream Git history is retained. RIFT is based on Felucca commit `743551712c36b3984392eea1dbe13a309907e17a`.
+
+RIFT is **GPL-3.0-only**; dependencies retain their own licenses. See [LICENSE](LICENSE), [LICENSING.md](LICENSING.md), [upstream credits](firmware/CREDITS.md) and [component notices](firmware/LICENSES/). No VHIKK-X firmware, code or wavetable assets were used. No affiliation with M-VAVE or FORGE TME is implied.

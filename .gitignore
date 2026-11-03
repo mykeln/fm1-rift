@@ -1,4 +1,9 @@
-build/
+.venv/
+.tools/
+dist/
 .DS_Store
 __pycache__/
-*.fwsc
+*.pyc
+.env
+.env.*
+!.env.example

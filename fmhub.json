@@ -1,0 +1,6 @@
+{
+  "what": "Experimental drone firmware for the M-VAVE FM-1 by mykeln, based on Felucca. Nine original modes combine oscillators, modulation, filtering, stereo feedback and frequency translation. RIFT 0.2 is host tested; full device validation is pending.",
+  "author": "Myke Nahorniak (mykeln)",
+  "kinds": ["synth"],
+  "cheat": "https://github.com/mykeln/fm1-rift/blob/main/firmware/docs/RIFT.md"
+}

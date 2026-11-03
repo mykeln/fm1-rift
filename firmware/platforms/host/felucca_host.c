@@ -22,6 +22,9 @@
 #include <stdint.h>
 
 #define FELUCCA_HOST 1
+#ifndef FELUCCA_RIFT
+#define FELUCCA_RIFT 1
+#endif
 #ifndef FELUCCA_CDC
 #define FELUCCA_CDC 1                    /* as src/felucca.c: MENU > USB SERIAL is there (nothing behind it) */
 #endif

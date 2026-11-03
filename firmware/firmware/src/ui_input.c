@@ -1508,6 +1508,9 @@ static void ui_notices(void)
     }
 }
 
+#if FELUCCA_RIFT
+#include "rift_ui_input.c"
+#endif
 static void ui_input(void)
 {
     uint32_t pressed = fm1_input_edges(0), notes = fm1_input_note_edges(), now = fm1_ticks(), id, b, k;
@@ -1535,6 +1538,9 @@ static void ui_input(void)
     follow_poll();                                      /* (1.6, #242: SEQ's roll follows the play position) */
     if (scr_input(pressed, notes))                      /* MENU > SCREEN OFF: dark, or the wake gesture: swallowed */
         return;                                         /* (before the buttons' timers: no tap or hold after it) */
+#if FELUCCA_RIFT
+    if (rift_input(pressed)) return;
+#endif
     if (mom.n && !mom_down()) {                         /* MOMENTARY: LFO let go (or the menu, a layer ..): back */
         mom_restore();
         ui_message("BACK");

@@ -6,6 +6,10 @@
  * engine (General MIDI map) on any part; the SAMPLE engine's PERC set is retired (drum_from_perc).
  * Sections: sizes, parameters, voices and engines, tracks and the song, system. */
 #include <stdint.h>
+#ifndef FELUCCA_RIFT
+#define FELUCCA_RIFT 0
+#endif
+#define ENGI_RIFT 15u
 
 /* ------------------------------------------------------------ sizes --- */
 #define NVOICE 8                 /* voices per part, and the budget shared by all parts */
@@ -44,7 +48,8 @@
 #if FELUCCA_ADPCM && !FELUCCA_SLICE
 #error "FELUCCA_ADPCM needs FELUCCA_SLICE (ADPCM is engine 14, after SLICE)"
 #endif
-#define NENG_BUILTIN (13 + FELUCCA_SLICE + FELUCCA_ADPCM)   /* SLICE (13), then ADPCM (14): the other engines keep
+#define NENG_BASE (13 + FELUCCA_SLICE + FELUCCA_ADPCM)
+#define NENG_BUILTIN (FELUCCA_RIFT ? 16 : NENG_BASE)   /* RIFT reserves 13/14 if disabled; existing IDs stay fixed.
                                                              * their numbers */
 #if FELUCCA_PLUGINS
 #define ENGI_PLUG0 32u           /* the numbers of plugin engines of their own (plugin.c): 32 .. NENGINES - 2; 15 .. 31 stay
@@ -62,7 +67,7 @@
 #endif
 #define ENGI_ADPCM 14u
 #define ENGI_DIGITAL 1u          /* reserved without FELUCCA_FM4: never selectable (eng_ok), its sounds load as FM6 */
-#define NENG_SHOWN (NENG_BUILTIN - !FELUCCA_FM4)   /* Felucca's engines one can pick: PRESETS, the EDIT layer, the
+#define NENG_SHOWN (NENG_BASE + FELUCCA_RIFT - !FELUCCA_FM4)   /* Felucca's engines one can pick: PRESETS, the EDIT layer, the
                                                     * editor, in the display order of engines.c ENGINE_ORDER (with
                                                     * plugins: eng_nshown, those and the plugins of their own) */
 #define UP_SLOTS 32u             /* user presets (upreset.c) */

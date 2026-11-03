@@ -48,7 +48,11 @@ static uint8_t eng_mem_owner[NPART];       /* engine index + 1 whose state is in
 #include "eng_adpcm.c"           /* ADPCM: BRR waves and an FIR echo, its DSP ported from snes_spc (adpcm_dsp.c, LGPL-2.1+) */
 #endif
 
-#if FELUCCA_PLUGINS
+#if FELUCCA_RIFT
+#include "eng_rift.c"
+#endif
+
+#if FELUCCA_PLUGINS || FELUCCA_RIFT
 /* a number no engine plays here (a plugin's, not loaded; a later Felucca's): a sine at the note, as a missing sample
  * (eng_sample.c smp_sine), and NO PLUGIN said (snd_missing) */
 #define MISS_P {"-", F_INT, 0, 127, 0, 0, 0}
@@ -104,6 +108,15 @@ static const engine_t *const ENGINES[NENGINES] = {
 #endif
 #if FELUCCA_ADPCM
     &ENG_ADPCM,                  /* 14 (ENGI_ADPCM; FELUCCA_ADPCM=0 builds without it) */
+#endif
+#if FELUCCA_RIFT
+#if !FELUCCA_SLICE
+    [13] = &ENG_MISSING,
+#endif
+#if !FELUCCA_ADPCM
+    [14] = &ENG_MISSING,
+#endif
+    [ENGI_RIFT] = &ENG_RIFT,
 #endif
 #if FELUCCA_PLUGINS
     [NENG_BUILTIN ... NENGINES - 1] = &ENG_MISSING,
@@ -178,6 +191,9 @@ static const uint8_t ENGINE_ORDER[NENG_SHOWN] = {
 #if FELUCCA_ADPCM
     14,                          /* ADPCM (1.8): last, so the EDIT layer's white keys keep the 13 above (ui_layer.c LY_ENG_KEYS) */
 #endif
+#if FELUCCA_RIFT
+    ENGI_RIFT,
+#endif
 };
 
 /* with plugins: ENGINE_ORDER, then the plugins of their own as they came (plugin.c plg_add), eng_nshown of them */
@@ -206,10 +222,14 @@ static uint32_t eng_nshown(void)
 #if FELUCCA_PLUGINS
 static int eng_ok(uint32_t e)
 {
+#if FELUCCA_RIFT
+    if ((e == 13u && !FELUCCA_SLICE) || (e == 14u && !FELUCCA_ADPCM)) return 0;
+#endif
     return e < NENG_BUILTIN ? FELUCCA_FM4 || e != ENGI_DIGITAL : e < NENGINES && ENGINES[e] != &ENG_MISSING;
 }
 #else
-static int eng_ok(uint32_t e) { return e < NENGINES && (FELUCCA_FM4 || e != ENGI_DIGITAL); }
+static int eng_ok(uint32_t e) { return e < NENGINES && (FELUCCA_FM4 || e != ENGI_DIGITAL)
+    && (!FELUCCA_RIFT || !((e == 13u && !FELUCCA_SLICE) || (e == 14u && !FELUCCA_ADPCM))); }
 #endif
 static uint32_t eng_vis(uint32_t n) { uint32_t c = eng_nshown(); return ENG_ORDER[n % c]; }
 static uint32_t eng_rank(uint32_t e)
@@ -273,6 +293,6 @@ static const struct {
 #define NPATTERNS (sizeof PATTERNS / sizeof PATTERNS[0])
 
 /* the parts at power-on (engine, preset, PATTERNS[n - 1] in the sequencer, 0 = empty: all are): bass, pad, lead, drums */
-static const uint8_t TRK_DEF[NPART][3] = {{0, 4, 0}, {ENGI_FM6, 4, 0}, {3, 0, 0}, {ENGI_DRUM, 0, 0}}; /* ANALOG ACID,
+static const uint8_t TRK_DEF[NPART][3] = {{FELUCCA_RIFT ? ENGI_RIFT : 0, FELUCCA_RIFT ? 0 : 4, 0}, {ENGI_FM6, 4, 0}, {3, 0, 0}, {ENGI_DRUM, 0, 0}}; /* ANALOG ACID,
                                                                        * FM6 PAD (was DIGITAL PAD), LOFI PULSE LD, DRUM KIT */
 static uint32_t trk_def_engine(uint32_t i) { return TRK_DEF[i % NPART][0]; }

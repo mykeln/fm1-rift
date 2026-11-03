@@ -1032,6 +1032,9 @@ static uint32_t mix_split(void)
 }
 #endif
 
+#if FELUCCA_RIFT
+#include "rift_dsp.c"
+#endif
 static void mix_block(int32_t *out, uint32_t n)
 {
     uint32_t i;
@@ -1040,6 +1043,20 @@ static void mix_block(int32_t *out, uint32_t n)
     for (i = 0; i < n; i++)
         send_c[i] = send_d[i] = send_r[i] = mix_l[i] = mix_r[i] = 0;
     events_block(n);
+#if FELUCCA_RIFT
+    if (trk[0].eng_req == ENGI_RIFT && trk[0].engine == ENGI_RIFT && !trk[0].xf_on) {
+        if (!rift.active) { rift_reset(); rift.active = 1; }
+        rift_audio(&trk[0], out, n);
+        for (i = 0; i < n; i++) {
+            int32_t l = out[2u * i] * mg >> 12;
+            int32_t r = out[2u * i + 1u] * mg >> 12;
+            master_out(&l, &r);
+            out[2u * i] = l; out[2u * i + 1u] = r;
+        }
+        return;
+    }
+    if (rift.active) { rift_reset(); fx.dly_w = 0; }
+#endif
     perf = perf_begin(n);                               /* the FX hold layer at work (perform.c) */
 #if FELUCCA_CPU2
     uint32_t m = C1_ON() ? C1_SPLIT() & ((1u << NPART) - 1u) : 0u;

@@ -405,6 +405,18 @@ static void __attribute__((noinline)) midi_event(uint32_t st, uint32_t ch, uint3
         midi_channel(ch)->bend = (int16_t)((int32_t)(d1 | (d2 << 7)) - 8192);
         midi_expression_channel(ch);
     } else if (st == 0xB0u) {
+#if FELUCCA_RIFT
+        if (midi_track(ch) == &trk[0] && trk[0].eng_req == ENGI_RIFT) {
+            static const uint8_t map[] = {P_CHOR, P_E2, P_E3, P_E1, P_E4, P_DIST, P_E5,
+                P_E6, P_E7, P_DLY, P_REV, P_LPHASE, P_LRATE, P_E0};
+            if (d1 >= 20u && d1 <= 33u) {
+                trk[0].p[map[d1 - 20u]] = (int16_t)(d1 == 33u ? (d2 * 8u + 63u) / 127u : d2);
+                return;
+            }
+            if (d1 == 69u) { trk[0].p[P_AHOLD] = d2 >= 64u; return; }
+            if (d1 == 120u) trk[0].p[P_MUTE] = 1;
+        }
+#endif
         mod_midi(midi_track(ch), st, d1, d2);
         midi_control(ch, d1, d2);
     } else if (st == 0xD0u)
