@@ -39,7 +39,7 @@ For the FM-1 build, follow [firmware/BUILDING.md](firmware/BUILDING.md) for the 
 
 The original local setup keeps tools in `.tools/` and uses a Colima profile/context named `fm1-build` / `colima-fm1-build` on macOS. Those tools, the SDK, build products and `.venv/` are excluded from Git. They are not required for host tests. Start that VM with `colima start --profile fm1-build` if you use that setup.
 
-The local bundle is written to `dist/`. Packages still use the upstream development identity `FM-1_900`. A unique identity and real-device validation are required before a public installable release. Do not use Felucca's `--release` version numbering to publish RIFT packages: it assigns Felucca identities.
+The local bundle is written to `dist/`. RIFT 0.5 uses local update identity `FM-1_905`, distinct from 0.4's `FM-1_904`, 0.3's `FM-1_903`, 0.2's `FM-1_902` and 0.1's `FM-1_900`. `firmware/firmware/src/rift_update_id.h` supplies the identity to both the package and running firmware; increase its revision for each installable update, because M-UPGRADE compares it rather than the displayed version or filename. A registered identity namespace and real-device validation are required before a public installable release. Do not use Felucca's `--release` version numbering to publish RIFT packages: it assigns Felucca identities.
 
 ## Hardware validation and publication
 

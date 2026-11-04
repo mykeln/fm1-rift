@@ -16,7 +16,7 @@ jobs:
         with:
           python-version: '3.12'
       - name: Install host dependencies
-        run: python -m pip install Pillow fonttools mido
+        run: python -m pip install Pillow fonttools mido numpy
       - name: RIFT host integration with ASan and UBSan
         run: sh rift.sh test
       - name: Installer protocol against simulated hardware

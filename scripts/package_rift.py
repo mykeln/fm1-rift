@@ -6,12 +6,16 @@ import json
 import shutil
 import subprocess
 import tarfile
+import sys
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 FW = ROOT / "firmware"
 OUT = ROOT / "dist"
-VERSION = "0.2"
+VERSION = "0.5"
+sys.path.insert(0, str(FW / "tools"))
+from fm1_install import product_of
 
 
 def git(*args):
@@ -22,6 +26,11 @@ def main():
     package = FW / "build/felucca.fwsc"
     if not package.is_file():
         raise SystemExit("Build the FM1 package first (sh rift.sh build).")
+    identity = product_of(package.read_bytes())
+    expected = re.search(r'^#define RIFT_UPDATE_ID "([^"]+)"$',
+                         (FW / "firmware/src/rift_update_id.h").read_text(), re.M)
+    if not expected or identity != expected[1]:
+        raise SystemExit("Package identity differs from RIFT source; rebuild before packaging.")
     OUT.mkdir(exist_ok=True)
     shutil.copy2(package, OUT / f"rift-{VERSION}.fwsc")
     shutil.copy2(FW / "docs/RIFT.md", OUT / "RIFT.md")
@@ -34,16 +43,23 @@ def main():
         dest.mkdir(exist_ok=True)
         for source in (FW / "build/rift-demo").glob(pattern):
             shutil.copy2(source, dest / source.name)
-    for name in ("rift-build.log", "rift-test.log", "rift-controls-test.log", "install-test.log", "project-test.log"):
+    long_demo = FW / "build/audio-space/CAVERN-base.wav"
+    if long_demo.is_file():
+        shutil.copy2(long_demo, OUT / "audio/10-CAVERN-LONG.wav")
+    moving_demo = FW / "build/audio-space/CAVERN-evolving.wav"
+    if moving_demo.is_file():
+        shutil.copy2(moving_demo, OUT / "audio/11-CAVERN-EVOLVING.wav")
+    for name in ("rift-full-test.log", "rift-build.log", "rift-test.log", "rift-controls-test.log", "rift-response-test.log", "rift-space-test.log", "rift-idle-test.log", "rift-persistence-test.log", "rift-identity-test.log", "install-test.log", "project-test.log"):
         source = FW / "build" / name
         if source.is_file():
             shutil.copy2(source, OUT / name)
     # Include both pinned dependencies; GitHub's automatic archives omit submodules.
-    # This local review snapshot uses tracked working files; source_dirty records edits.
+    # Include new local source files too; source_dirty records edits.
     source_archive = OUT / f"rift-{VERSION}-source.tar.gz"
-    names = git("ls-files", "--recurse-submodules", "-z").decode().split("\0")
+    names = set(git("ls-files", "--recurse-submodules", "-z").decode().split("\0"))
+    names.update(git("ls-files", "--others", "--exclude-standard", "-z").decode().split("\0"))
     with tarfile.open(source_archive, "w:gz") as archive:
-        for name in filter(None, names):
+        for name in sorted(filter(None, names)):
             archive.add(ROOT / name, arcname=f"rift-{VERSION}/{name}", recursive=False)
     manifest = {
         "name": "RIFT", "version": VERSION, "status": "experimental; host tested; this update not installed by agent",
@@ -52,9 +68,12 @@ def main():
         "source_commit": git("rev-parse", "HEAD").decode().strip(),
         "source_dirty": bool(git("status", "--porcelain")),
         "submodules": git("submodule", "status").decode().strip().splitlines(),
-        "package_identity": "FM-1_900", "connected_device_version_read": "RIFT 0.1 (USB CDC)",
-        "hardware_observation": {"version": "RIFT 0.1", "cpu_pct": 36, "audio_late": 0, "voices_shed": 0},
-        "device_writes_performed": False,
+        "package_identity": identity, "connected_device_version_read": "RIFT 0.4 (USB CDC)",
+        "hardware_observation": {"version": "RIFT 0.4", "cpu_pct_with_usb_capture": 73,
+                                 "audio_late_delta": 9, "uac_underruns": 14, "voices_shed_delta": 0,
+                                 "finding": "0.4 allowed background flash saves during drone/tail; 0.5 guards are host tested, hardware pending",
+                                 "audio_capture": "Felucca USB audio; original live patch and selected track restored and verified"},
+        "firmware_writes_performed_by_agent": False,
         "build": {"command": "sh rift.sh build", "sdk_tag": "AC79NN_SDK_V1.2.1_2023-12-13",
                   "toolchain": "jieli-linux-toolchains-20260730.1", "docker_context": "colima-fm1-build"},
         "package_sha256": hashlib.sha256(package.read_bytes()).hexdigest(),

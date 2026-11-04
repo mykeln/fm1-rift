@@ -4,6 +4,7 @@
  * define, so the order matters. */
 
 /* ---------------------------------------------------- build options --- */
+#include "rift_update_id.h"
 #ifndef FELUCCA_RIFT
 #define FELUCCA_RIFT 1
 #endif
@@ -40,7 +41,7 @@
                                   * PLUGIN commands, editor_plugin.c); 0: none, the engines and RAM of 1.8 */
 #endif
 #ifndef FELUCCA_ID
-#define FELUCCA_ID "FM-1_900"    /* package identity (build.py: the .fwsc marker string) */
+#define FELUCCA_ID RIFT_UPDATE_ID /* package and device share this update revision */
 #endif
 #ifndef FELUCCA_CPU2
 #define FELUCCA_CPU2 1           /* 1 (1.6.1): the second core is built in and renders some parts when MENU > SYSTEM >
@@ -55,7 +56,7 @@
 #define FM1_CRASH_CTX_N 1u         /* chip/fm1_irq.h: the registers of the last crash only (80 B of .noinit; four would
                                     * not fit beside the project slots) */
 #ifndef FELUCCA_VERSION
-#define FELUCCA_VERSION "RIFT 0.2" /* Development build, based on Felucca 1.9. */
+#define FELUCCA_VERSION "RIFT 0.5" /* Development build, based on Felucca 1.9. */
 #endif
 #if FELUCCA_OTA && !FELUCCA_FLASH
 #error "FELUCCA_OTA needs FELUCCA_FLASH"

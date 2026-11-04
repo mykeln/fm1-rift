@@ -1328,6 +1328,9 @@ static void settings_poll(void)
     if (!persist_pending || !flash_ok || transport_busy() ||
         (persist_pending == 2u && (uint32_t)(fm1_ms - persist_retry_ms) < 1000u))
         return;
+#if FELUCCA_RIFT
+    if (rift_sounding()) return; /* an automatic settings write must not cut a drone/tail */
+#endif
     p = persist_saved;
     settings_export(&p);
     if (!memcmp(&p, &persist_saved, sizeof p)) {
@@ -1424,6 +1427,12 @@ static int autosave_quiet(void)
     uint32_t k, i;
     if (transport_busy() || fm1_in.notes || fm1_in.buttons)
         return 0;
+#if FELUCCA_RIFT
+    /* RIFT owns the output exclusively. Its voice descriptors do not render
+     * the drone/envelope; use actual output silence, including the wet tail. */
+    if (rift.active && trk[0].eng_req == ENGI_RIFT)
+        return !rift_sounding();
+#endif
     for (k = 0; k < NTRK; k++)
         for (i = 0; i < NVOICE; i++)
             if (trk[k].v[i].active)

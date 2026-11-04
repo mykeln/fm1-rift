@@ -49,7 +49,16 @@ SDK_SHA256 = {
     "cfg/eq_cfg_hw.bin": "41167491bffed4651750719c973d2758adeb9021a5670d02d6a53c85ed80ea7d",
 }
 
-PRODUCT = "FM-1_900"                # package identity; release builds are FM-1_9XY
+def rift_product():
+    """One identity for the package header and the running firmware."""
+    header = (FW / "src" / "rift_update_id.h").read_text()
+    match = re.search(r'^#define RIFT_UPDATE_ID "(FM-1_[0-9]+)"$', header, re.M)
+    if not match:
+        raise SystemExit("rift_update_id.h must define a numeric FM-1 update identity")
+    return match[1]
+
+
+PRODUCT = rift_product()            # local RIFT update revision, shared with felucca.c
 VERSION = None                      # FELUCCA_VERSION for release builds (default: firmware/src/felucca.c)
 # FELUCCA_CPU2 (firmware/src/felucca.c), unset or 1, the default (1.6.1): the second core is built in, its entry and
 # stacks (firmware/bsp/chip/fm1_cpu1.S) linked and its waiting loop (.c1_text) checked; MENU > SYSTEM > 2ND CORE starts it
