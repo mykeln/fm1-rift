@@ -1,8 +1,10 @@
 # RIFT for the M-VAVE FM-1
 
-Experimental drone firmware, heavily inspired by the dystopian sounds of the VHIKK-X, by FORGE TME. This firwmare is a heavily modified version of  [Felucca](https://github.com/hugelton/Felucca).
+Experimental drone firmware, heavily inspired by the dystopian sounds of the VHIKK-X, by FORGE TME. This firwmare is a built on a modified version of  [Felucca](https://github.com/hugelton/Felucca).
 
 Nine original modes combine oscillator pairs and clusters, phase/ring modulation, filtering, stereo delay/scattering feedback and frequency translation.
+
+The result, some nasty, evil sounding stuff.
 
 ## Sound and controls
 
