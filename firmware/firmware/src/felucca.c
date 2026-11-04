@@ -56,7 +56,7 @@
 #define FM1_CRASH_CTX_N 1u         /* chip/fm1_irq.h: the registers of the last crash only (80 B of .noinit; four would
                                     * not fit beside the project slots) */
 #ifndef FELUCCA_VERSION
-#define FELUCCA_VERSION "RIFT 0.5" /* Development build, based on Felucca 1.9. */
+#define FELUCCA_VERSION "RIFT 0.6" /* Development build, based on Felucca 1.9. */
 #endif
 #if FELUCCA_OTA && !FELUCCA_FLASH
 #error "FELUCCA_OTA needs FELUCCA_FLASH"

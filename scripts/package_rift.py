@@ -13,7 +13,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 FW = ROOT / "firmware"
 OUT = ROOT / "dist"
-VERSION = "0.5"
+VERSION = "0.6"
 sys.path.insert(0, str(FW / "tools"))
 from fm1_install import product_of
 
@@ -49,7 +49,16 @@ def main():
     moving_demo = FW / "build/audio-space/CAVERN-evolving.wav"
     if moving_demo.is_file():
         shutil.copy2(moving_demo, OUT / "audio/11-CAVERN-EVOLVING.wav")
-    for name in ("rift-full-test.log", "rift-build.log", "rift-test.log", "rift-controls-test.log", "rift-response-test.log", "rift-space-test.log", "rift-idle-test.log", "rift-persistence-test.log", "rift-identity-test.log", "install-test.log", "project-test.log"):
+    palette = FW / "build/audio-palette"
+    if palette.is_dir():
+        dest = OUT / "audio/palette"
+        dest.mkdir(parents=True, exist_ok=True)
+        for source in palette.glob("*.wav"):
+            shutil.copy2(source, dest / source.name)
+        response = palette / "palette-response.json"
+        if response.is_file():
+            shutil.copy2(response, OUT / "palette-response.json")
+    for name in ("rift-full-test.log", "rift-build.log", "rift-test.log", "rift-controls-test.log", "rift-response-test.log", "rift-space-test.log", "rift-idle-test.log", "rift-palette-test.log", "rift-persistence-test.log", "rift-identity-test.log", "install-test.log", "project-test.log"):
         source = FW / "build" / name
         if source.is_file():
             shutil.copy2(source, OUT / name)
@@ -74,6 +83,7 @@ def main():
                                  "finding": "0.4 allowed background flash saves during drone/tail; 0.5 guards are host tested, hardware pending",
                                  "audio_capture": "Felucca USB audio; original live patch and selected track restored and verified"},
         "firmware_writes_performed_by_agent": False,
+        "palette_validation": "27 sustained factory renders; all 13 dials in all 9 modes; subjective listening and 0.6 hardware timing pending",
         "build": {"command": "sh rift.sh build", "sdk_tag": "AC79NN_SDK_V1.2.1_2023-12-13",
                   "toolchain": "jieli-linux-toolchains-20260730.1", "docker_context": "colima-fm1-build"},
         "package_sha256": hashlib.sha256(package.read_bytes()).hexdigest(),

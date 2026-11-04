@@ -33,7 +33,7 @@ def status():
 def main():
     global OUT
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--expect-version", default="RIFT 0.5")
+    ap.add_argument("--expect-version", default="RIFT 0.6")
     ap.add_argument("--space", action="store_true", help="48 seconds of an unchanged CAVERN drone, then 32 seconds of tail")
     ap.add_argument("--hold-autosave", action="store_true", help="diagnostic: sample-info reads defer autosave without changing firmware or preferences")
     args = ap.parse_args()

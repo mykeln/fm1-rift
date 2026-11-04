@@ -4,7 +4,7 @@ Experimental drone firmware, heavily inspired by the dystopian sounds of the VHI
 
 Nine original modes combine oscillator pairs and clusters, phase/ring modulation, filtering, stereo delay/scattering feedback and frequency translation.
 
-The result, some nasty, evil sounding stuff.
+Deep, warm, atmospheric drones, with room to push into stranger and more abrasive textures.
 
 ## Sound and controls
 
@@ -22,7 +22,7 @@ python3 -m venv .venv
 sh rift.sh test
 ```
 
-Host tests need a C compiler and Python 3. They generate headers, run RIFT integration tests under AddressSanitizer/UndefinedBehaviorSanitizer, and render nine short stereo WAV previews and screen captures into `firmware/build/rift-demo/`. CI also checks the installer against simulated hardware. Host tests do not establish real-device performance.
+Host tests need a C compiler and Python 3. They generate headers, run RIFT integration tests under AddressSanitizer/UndefinedBehaviorSanitizer, and render nine short stereo WAV previews and screen captures into `firmware/build/rift-demo/`. CI also checks the installer against simulated hardware. The palette checks also render all 27 sounds and measure every dial in every mode. The unnormalized listening previews are in `firmware/build/audio-palette/` and, after a build, `dist/audio/palette/`. Host tests do not establish subjective sound quality or real-device performance.
 
 For an existing clone, run `git submodule update --init --recursive`. The engine and board-support dependencies are pinned. GitHub's automatic source ZIP/tar downloads omit those dependencies; use a recursive Git clone.
 
@@ -39,7 +39,7 @@ For the FM-1 build, follow [firmware/BUILDING.md](firmware/BUILDING.md) for the 
 
 The original local setup keeps tools in `.tools/` and uses a Colima profile/context named `fm1-build` / `colima-fm1-build` on macOS. Those tools, the SDK, build products and `.venv/` are excluded from Git. They are not required for host tests. Start that VM with `colima start --profile fm1-build` if you use that setup.
 
-The local bundle is written to `dist/`. RIFT 0.5 uses local update identity `FM-1_905`, distinct from 0.4's `FM-1_904`, 0.3's `FM-1_903`, 0.2's `FM-1_902` and 0.1's `FM-1_900`. `firmware/firmware/src/rift_update_id.h` supplies the identity to both the package and running firmware; increase its revision for each installable update, because M-UPGRADE compares it rather than the displayed version or filename. A registered identity namespace and real-device validation are required before a public installable release. Do not use Felucca's `--release` version numbering to publish RIFT packages: it assigns Felucca identities.
+The local bundle is written to `dist/`. RIFT 0.6 uses local update identity `FM-1_906`, distinct from 0.5's `FM-1_905`, 0.4's `FM-1_904`, 0.3's `FM-1_903`, 0.2's `FM-1_902` and 0.1's `FM-1_900`. `firmware/firmware/src/rift_update_id.h` supplies the identity to both the package and running firmware; increase its revision for each installable update, because M-UPGRADE compares it rather than the displayed version or filename. A registered identity namespace and real-device validation are required before a public installable release. Do not use Felucca's `--release` version numbering to publish RIFT packages: it assigns Felucca identities.
 
 ## Hardware validation and publication
 

@@ -28,7 +28,7 @@ static void rift_draw(void)
         draw_text_line(10, 220, 220, &AF_S, "PRESETS: SOUND  SELECT: BASIS", T_MID, T_BG, 0);
     }
     if (full || shown.preset != (int16_t)t->preset) {
-        str_cpy(line, "RIFT 0.5 / FM1   SOUND ", sizeof line);
+        str_cpy(line, "RIFT 0.6 / FM1   SOUND ", sizeof line);
         fmt_int(line + str_len(line), (t->preset / 9u) % 3u + 1u);
         str_cpy(line + str_len(line), "/3", sizeof line - str_len(line));
         draw_text_line(10, 5, 220, &AF_S, line, T_MID, T_BG, 0);

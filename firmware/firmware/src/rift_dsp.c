@@ -142,7 +142,7 @@ static void rift_audio(track_t *t, int32_t *out, uint32_t n)
     static const int8_t chord[4] = {0, 7, 12, 16};
     static const uint8_t partial_ratio[4] = {1, 2, 3, 5}, cross_ratio[4] = {1, 2, 3, 7};
     static const uint16_t taps[RIFT_LINES] = {8171, 7481, 6749, 5987, 5279, 4513, 3767, 2999};
-    int32_t p[RF_N], target[RIFT_LINES], morph[4], amp, fb, form, mix, warp, shift_inc, scatter_c, scatter_s, damping;
+    int32_t p[RF_N], target[RIFT_LINES], morph[4], bloom[4], breath[4], amp, fb, form, mix, warp, drive, shift_inc, scatter_c, scatter_s, damping, send_gain;
     uint32_t inc[4], mode, i, j, voices;
     tsvf_t filter;
     uint32_t audible = 0;
@@ -172,11 +172,16 @@ static void rift_audio(track_t *t, int32_t *out, uint32_t n)
     if (rift.fade < 32767) rift.fade = clamp(rift.fade + 512, 0, 32767);
     voices = mode < 2u ? 2u : 4u;
     warp = p[RF_WARP] - 16384;
+    drive = clamp(p[RF_FUSE] - 64 * 256, 0, 63 * 256) * 2;
     for (j = 0; j < 4u; j++) {
         int32_t spread = rift_field((uint32_t)(p[RF_SEED] + (mode == 2u || mode >= 4u ? p[RF_MORPH] * 2 : 0)), j + 1u);
         int32_t offset = (spread * (p[RF_SPAN] >> 8)) / 8192; /* +/- 254 sixteenths of a semitone */
         int32_t pitch = p[RF_BASIS] / 16;
         if (!j) offset = 0;
+        /* CLUSTER is a close, beating unison ensemble, not WAVES with another
+         * random wide interval set. CAVERN keeps its fifth/octave scaffolding;
+         * SPAN adds choir detuning instead of several unrelated semitones. */
+        if (mode == 5u || mode == 8u) offset = 0;
         if (mode == 4u) offset = ((int32_t)chord[j] * (p[RF_SPAN] >> 8) / 64) * 16;
         if (mode == 6u) offset = (int32_t)j * (p[RF_SPAN] - 16384) / 2048;
         inc[j] = pitch_inc(clamp(pitch + offset, 0, 127 * 16));
@@ -192,7 +197,22 @@ static void rift_audio(track_t *t, int32_t *out, uint32_t n)
         }
         /* Keep the oscillators out of the top octave where heavy modulation aliases most. */
         if (inc[j] > 0x20000000u) inc[j] = 0x20000000u;
+        if ((mode == 5u || mode == 8u) && j) {
+            /* Sub-cent tuning resolution: avoid truncating a narrow SPAN to
+             * just a few MIDI sixteenths. At full span: roughly +/- 53 cents. */
+            int32_t detune = spread * p[RF_SPAN] / 262144;
+            int32_t delta = mulq16((int32_t)inc[j], (uint32_t)(detune < 0 ? -detune : detune));
+            inc[j] = (uint32_t)((int32_t)inc[j] + (detune < 0 ? -delta : delta));
+            if (inc[j] > 0x20000000u) inc[j] = 0x20000000u;
+        }
         morph[j] = clamp(p[RF_MORPH] + rift_field((uint32_t)p[RF_SCAN] + (rift.motion >> 16), j + 9u) / 2, 0, 32511);
+        bloom[j] = 28672 + mulq15(sine_i(rift.slow * (1u + j % 2u) + j * 0x37000000u), 2048 + p[RF_SCAN] / 16);
+        if (mode == 8u) {
+            bloom[j] = 24576 + mulq15(sine_i(rift.slow * (1u + j % 2u) + j * 0x37000000u), 6144 + p[RF_SCAN] / 16);
+            morph[j] = clamp(morph[j] + sine_i(rift.drift + rift.slow + j * 0x37000000u) / 3, 0, 32511);
+        }
+        int32_t depth = clamp(p[RF_SCAN] - 64 * 256, 0, 63 * 256) / 4;
+        breath[j] = 32768 - depth + mulq15(sine_i(rift.slow + j * 0x37000000u), depth);
     }
     for (j = 0; j < RIFT_LINES; j++) {
         target[j] = 16 * 256 + ((int32_t)taps[j] * p[RF_TIME] >> 7);
@@ -207,10 +227,17 @@ static void rift_audio(track_t *t, int32_t *out, uint32_t n)
     }
     rift.slow += n * 10713u;
     rift.drift += n * 3211u;
-    rift.motion += n * (64u + (uint32_t)(p[RF_SCAN] >> 5));
+    /* The upper half reaches audible swells and faster timbral travel; keep
+     * the lower half's slow drift, including the established factory voices. */
+    rift.motion += n * (64u + (uint32_t)(p[RF_SCAN] >> 5)
+                      + (uint32_t)clamp(p[RF_SCAN] - 64 * 256, 0, 63 * 256) / 2u);
     tsvf_coef(&filter, p[RF_FIELD], p[RF_FUSE] >> 9);
     fb = 32768 - p[RF_FEED];
     fb = mulq15(32768 - mulq15(mulq15(fb, fb), fb), 32680); /* cubic decay curve; below unity */
+    /* At the longest decays, reduce fresh excitation instead of continually
+     * driving the tank into saturation. FEED still lengthens release. Below
+     * 96 the established sounds and their gain remain bit-identical. */
+    send_gain = 32768 - clamp(p[RF_FEED] - 96 * 256, 0, 31 * 256) * 3;
     form = p[RF_FORM];
     scatter_s = sine_i((uint32_t)form << 14);
     scatter_c = sine_i(((uint32_t)form << 14) + 0x40000000u);
@@ -237,9 +264,29 @@ static void rift_audio(track_t *t, int32_t *out, uint32_t n)
                 y += (sine_i(phase * 2u) - y) * (p[RF_SCAN] >> 2) >> 15;
                 if (mode == 6u) y = mulq15(y, j ? 16384 + p[RF_MORPH] / 2 : 24576 - p[RF_MORPH] / 2);
             }
+            else if (mode == 5u) {
+                /* Soft harmonic shimmer above four close fundamentals. The
+                 * upper voices grow with MORPH without a pulse/saw scan. */
+                y = mulq15(sine_i(phase), 24576)
+                    + mulq15(sine_i(phase * 2u), morph[j] / 4)
+                    + mulq15(sine_i(phase * 3u), morph[j] / 8);
+                y = mulq15(y, bloom[j]);
+            }
+            else if (mode == 8u) {
+                /* A breathing, rounded choir: MORPH opens octave and third
+                 * harmonics; no buzzy pulse end or noise source. */
+                y = mulq15(sine_i(phase), 24576)
+                    + mulq15(sine_i(phase * 2u), morph[j] / 5)
+                    + mulq15(sine_i(phase * 3u), morph[j] / 6);
+                y = mulq15(y, bloom[j]);
+            }
             else y = rift_wave(phase, inc[j], morph[j]);
             if (mode == 1u) y = sine_i((uint32_t)(y * (1024 + (p[RF_FUSE] >> 2))) * 8u);
             if (warp < 0) y += ((mulq15(y, prev) - y) * (-warp) >> 14);
+            /* FUSE's upper half adds harmonic body even when FIELD is well
+             * above a bass fundamental and resonance alone is nearly silent. */
+            if (drive) y += mulq15(softclip(y * 2) - y, drive);
+            y = mulq16(y, (uint32_t)breath[j] * 2u);
             prev = y;
             dry[j & 1u] += y / (int32_t)voices;
             rift.phase[j] += inc[j];
@@ -252,6 +299,9 @@ static void rift_audio(track_t *t, int32_t *out, uint32_t n)
             rift.gen_dc[j] += (x * 256 - rift.gen_dc[j]) / 1024;
             x -= rift.gen_dc[j] / 256;
             dry[j] = mulq15(softclip(x * 2), rift.gain) / 2;
+            /* The folder restores a near-full-scale sine from an already
+             * rounded input. Match its body level to the other generators. */
+            if (mode == 1u) dry[j] = dry[j] * 3 / 4;
             if (mode == 6u) dry[j] = dry[j] * 3 / 2;
             /* Two low-pass stages before decimation. This is a dark space
              * processor; the dry generator retains the full-rate spectrum. */
@@ -262,7 +312,7 @@ static void rift_audio(track_t *t, int32_t *out, uint32_t n)
             int32_t d[RIFT_LINES], h[RIFT_LINES], rotated[RIFT_LINES];
             int32_t cs = sine_i(rift.shift + 0x40000000u), sn = sine_i(rift.shift);
             for (j = 0; j < 2u; j++) {
-                int32_t x = rift.send_lp[j][1];
+                int32_t x = mulq16(rift.send_lp[j][1], (uint32_t)send_gain * 2u);
                 int32_t diffused = rift_diffuse(j, x, form);
                 injection[j] = x + mulq15(diffused - x, form);
             }

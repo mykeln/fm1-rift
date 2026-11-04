@@ -20,7 +20,7 @@ if [ "$(uname -s)" = Darwin ] && command -v docker >/dev/null 2>&1 &&
 fi
 cd "$ROOT/firmware"
 case "${1:-test}" in
-  test) sh build.sh gen; sh tests/run_rift.sh; sh tests/run_rift_controls.sh; sh tests/run_rift_audio.sh; sh tests/run_rift_space.sh; sh tests/run_rift_idle.sh ;;
+  test) sh build.sh gen; sh tests/run_rift.sh; sh tests/run_rift_controls.sh; sh tests/run_rift_audio.sh; sh tests/run_rift_space.sh; sh tests/run_rift_idle.sh; sh tests/run_rift_palette.sh ;;
   build) sh build.sh; "$PYTHON" "$ROOT/scripts/package_rift.py" ;;
   preview)
     sh build.sh sdl
