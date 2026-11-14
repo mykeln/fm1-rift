@@ -52,3 +52,5 @@ Read the [hardware trial and rollback guide](firmware/docs/RIFT.md#hardware-tria
 [Contributions and bug reports](CONTRIBUTING.md) are welcome. The modified Felucca source is under `firmware/`; upstream Git history is retained. RIFT is based on Felucca commit `743551712c36b3984392eea1dbe13a309907e17a`.
 
 RIFT is **GPL-3.0-only**; dependencies retain their own licenses. See [LICENSE](LICENSE), [LICENSING.md](LICENSING.md), [upstream credits](firmware/CREDITS.md) and [component notices](firmware/LICENSES/). No VHIKK-X firmware, code or wavetable assets were used. No affiliation with M-VAVE or FORGE TME is implied.
+
+You can also try FM-1 Rift in the browser, no flashing needed, in the free community [FM-1 Emulator](https://fm1-emulator.atst.tools/).
