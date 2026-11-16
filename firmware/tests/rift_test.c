@@ -162,7 +162,7 @@ int main(int argc, char **argv)
         }
     }
     check("random macro sweeps remain bounded", !failures);
-    trk[0].p[P_MUTE] = 1; trk[0].p[P_E7] = 0;
+    trk[0].p[P_MUTE] = 1; trk[0].p[P_E7] = 64;
     for (b = 0; b < FS * 3u; b += CTL) rift_audio(&trk[0], out, CTL);
     { int peak = 0; for (i = 0; i < CTL*2; i++) if (abs(out[i]) > peak) peak = abs(out[i]);
       check("mute settles to silence with feedback zero", peak < 16); }

@@ -20,7 +20,7 @@ static void wav(FILE *f, uint32_t frames)
 int main(int argc, char **argv)
 {
     static const int ids[9] = {-1,P_E5,P_E5,P_E6,P_E6,P_E7,P_E7,P_DLY,P_DLY};
-    static const int values[9] = {0,0,127,0,127,0,127,0,127};
+    static const int values[9] = {0,0,127,0,127,64,127,0,127};
     static const char *tag[9] = {"base","time-0","time-127","form-0","form-127","feed-0","feed-127","cell-0","cell-127"};
     int32_t out[CTL*2]; char path[512];
     if(argc != 2) return 2;

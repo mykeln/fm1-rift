@@ -19,7 +19,7 @@ int main(void)
     trk[0].p[P_MUTE]=1; run_ms(3000);
     ok=!autosave_quiet();
     printf("rift idle: audible released tail defers autosave: %s\n",ok?"ok":"FAIL"); fail+=!ok;
-    trk[0].p[P_E7]=0; run_ms(3000);
+    trk[0].p[P_E7]=64; run_ms(3000);
     ok=autosave_quiet();
     printf("rift idle: quiet muted tank permits autosave: %s\n",ok?"ok":"FAIL"); fail+=!ok;
     ok=!persist_pending && persist_saved.palette == palette_to_stored(settings.palette);

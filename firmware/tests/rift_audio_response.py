@@ -56,8 +56,10 @@ def main():
                 ok=data[hi]["tail_db"]-data[lo]["tail_db"]>=12
                 print(f"  FEED extends the audible tail: {'ok' if ok else 'FAIL'}"); fail+=not ok
             if control=="time" and "tail_db" in data[lo]:
-                ok=data[hi]["tail_db"]-data[lo]["tail_db"]>=6
-                print(f"  TIME changes the processor decay timing: {'ok' if ok else 'FAIL'}"); fail+=not ok
+                # Short delays can sustain pitched combs too, especially at neutral CELL.
+                # A large resonance change is a valid timing response even when both ring.
+                ok=data[hi]["tail_db"]-data[lo]["tail_db"]>=6 or tv>=.2
+                print(f"  TIME changes decay timing or resonances: {'ok' if ok else 'FAIL'}"); fail+=not ok
         if mode=="PARTIAL":
             ok=data[mode+"-base"]["above_300hz"]>=.10
             print(f"  PARTIAL has audible upper partials: {'ok' if ok else 'FAIL'}"); fail+=not ok

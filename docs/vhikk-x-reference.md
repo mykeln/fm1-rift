@@ -1,6 +1,6 @@
 # VHIKK-X behavior reference for an FM1 implementation
 
-Researched 2026-11-03 from the manufacturer's documentation. This specifies observable behavior to approximate with original DSP; it is not source code or a claim of sonic equivalence. No VHIKK-X firmware binary was downloaded or examined.
+Initial research, 2026-11-03, from the manufacturer's documentation. The [expanded public-source investigation](vhikk-x-public-research.md) adds designer interviews, instructional demonstrations, hands-on tests and implementation priorities. This specifies observable behavior to approximate with original DSP; it is not source code or a claim of sonic equivalence. No VHIKK-X firmware binary was downloaded or examined.
 
 ## Current scope and interface
 

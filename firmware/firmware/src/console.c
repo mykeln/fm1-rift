@@ -196,6 +196,8 @@ static void con_status(void)
     con_puts(FELUCCA_VERSION);
     con_puts("\r\n");
     con_kv("uptime_ms", (int32_t)fm1_ms);
+    con_kv("master_q12", (int32_t)song.master_q12);
+    con_kv("usb_level_fixed", fx_usb_fixed);
     con_kv("cpu_pct", (int32_t)(song.cpu_q8 * 100u / 256u));
     con_kv("audio_max_us", (int32_t)felucca_dbg.max_us);
     con_kv("audio_late", (int32_t)felucca_dbg.late);

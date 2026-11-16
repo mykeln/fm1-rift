@@ -13,7 +13,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 FW = ROOT / "firmware"
 OUT = ROOT / "dist"
-VERSION = "0.6"
+VERSION = "0.8"
 sys.path.insert(0, str(FW / "tools"))
 from fm1_install import product_of
 
@@ -49,6 +49,13 @@ def main():
     moving_demo = FW / "build/audio-space/CAVERN-evolving.wav"
     if moving_demo.is_file():
         shutil.copy2(moving_demo, OUT / "audio/11-CAVERN-EVOLVING.wav")
+    live = FW / "build/audio-live/live-response.json"
+    if live.is_file():
+        shutil.copy2(live, OUT / "live-response.json")
+    behavior = FW / "build/audio-behavior/behavior-response.json"
+    if behavior.is_file():
+        shutil.copy2(behavior, OUT / "behavior-response.json")
+    shutil.copy2(ROOT / "docs/vhikk-x-public-research.md", OUT / "vhikk-x-public-research.md")
     palette = FW / "build/audio-palette"
     if palette.is_dir():
         dest = OUT / "audio/palette"
@@ -58,7 +65,7 @@ def main():
         response = palette / "palette-response.json"
         if response.is_file():
             shutil.copy2(response, OUT / "palette-response.json")
-    for name in ("rift-full-test.log", "rift-build.log", "rift-test.log", "rift-controls-test.log", "rift-response-test.log", "rift-space-test.log", "rift-idle-test.log", "rift-palette-test.log", "rift-persistence-test.log", "rift-identity-test.log", "install-test.log", "project-test.log"):
+    for name in ("rift-full-test.log", "rift-build.log", "rift-test.log", "rift-controls-test.log", "rift-live-test.log", "rift-behavior-test.log", "rift-response-test.log", "rift-space-test.log", "rift-idle-test.log", "rift-palette-test.log", "rift-persistence-test.log", "rift-identity-test.log", "install-test.log", "project-test.log"):
         source = FW / "build" / name
         if source.is_file():
             shutil.copy2(source, OUT / name)
@@ -70,6 +77,8 @@ def main():
     with tarfile.open(source_archive, "w:gz") as archive:
         for name in sorted(filter(None, names)):
             archive.add(ROOT / name, arcname=f"rift-{VERSION}/{name}", recursive=False)
+    health = FW / "build/rift-07-hardware-health.json"
+    known_regression = json.loads(health.read_text()) if health.is_file() else None
     manifest = {
         "name": "RIFT", "version": VERSION, "status": "experimental; host tested; this update not installed by agent",
         "base_repository": "https://github.com/hugelton/Felucca",
@@ -77,13 +86,15 @@ def main():
         "source_commit": git("rev-parse", "HEAD").decode().strip(),
         "source_dirty": bool(git("status", "--porcelain")),
         "submodules": git("submodule", "status").decode().strip().splitlines(),
-        "package_identity": identity, "connected_device_version_read": "RIFT 0.4 (USB CDC)",
-        "hardware_observation": {"version": "RIFT 0.4", "cpu_pct_with_usb_capture": 73,
+        "package_identity": identity, "connected_device_version_read": "RIFT 0.7 (USB CDC)",
+        "historical_hardware_observation": {"version": "RIFT 0.4", "cpu_pct_with_usb_capture": 73,
                                  "audio_late_delta": 9, "uac_underruns": 14, "voices_shed_delta": 0,
                                  "finding": "0.4 allowed background flash saves during drone/tail; 0.5 guards are host tested, hardware pending",
                                  "audio_capture": "Felucca USB audio; original live patch and selected track restored and verified"},
+        "known_0_7_deadline_regression": known_regression,
+        "current_hardware_validation": "pending installation",
         "firmware_writes_performed_by_agent": False,
-        "palette_validation": "27 sustained factory renders; all 13 dials in all 9 modes; subjective listening and 0.6 hardware timing pending",
+        "palette_validation": "27 sustained factory renders; all 13 dials in all 9 modes; public-source macro behavior probes; subjective listening and 0.8 hardware deadline verification pending",
         "build": {"command": "sh rift.sh build", "sdk_tag": "AC79NN_SDK_V1.2.1_2023-12-13",
                   "toolchain": "jieli-linux-toolchains-20260730.1", "docker_context": "colima-fm1-build"},
         "package_sha256": hashlib.sha256(package.read_bytes()).hexdigest(),

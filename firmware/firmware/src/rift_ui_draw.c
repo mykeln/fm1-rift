@@ -28,7 +28,7 @@ static void rift_draw(void)
         draw_text_line(10, 220, 220, &AF_S, "PRESETS: SOUND  SELECT: BASIS", T_MID, T_BG, 0);
     }
     if (full || shown.preset != (int16_t)t->preset) {
-        str_cpy(line, "RIFT 0.6 / FM1   SOUND ", sizeof line);
+        str_cpy(line, "RIFT 0.8 / FM1   SOUND ", sizeof line);
         fmt_int(line + str_len(line), (t->preset / 9u) % 3u + 1u);
         str_cpy(line + str_len(line), "/3", sizeof line - str_len(line));
         draw_text_line(10, 5, 220, &AF_S, line, T_MID, T_BG, 0);
@@ -47,7 +47,8 @@ static void rift_draw(void)
         uint32_t y = 84u + k * 28u;
         if (!page_changed && shown.value[k] == v) continue;
         shown.value[k] = (int16_t)v;
-        if ((rift_page == 0u && k == 2u) || (rift_page == 1u && k == 3u)) v -= 64;
+        if ((rift_page == 0u && k >= 1u) || (rift_page == 1u && k >= 2u)
+            || (rift_page == 2u && k == 2u)) v -= 64;
         fmt_int(value, v);
         if (page_changed)
             draw_text_line(10, y, 140, &AF_M, RIFT_PAGE_LABELS[rift_page][k], T_TEXT, T_BG, 0);

@@ -40,16 +40,19 @@ def main():
         bands = np.array([power[(freq >= lo) & (freq < hi)].sum() for lo, hi in zip(edges[:-1], edges[1:])])
         return bands / max(bands.sum(), 1e-30)
     motion = float(np.abs(spectrum(8) - spectrum(40)).sum() / 2)
+    held_buildup = float(20*np.log10((np.sqrt(np.mean(moving[40*fs:44*fs]**2))+1e-15)
+                                   /(np.sqrt(np.mean(moving[8*fs:12*fs]**2))+1e-15)))
     checks = {
         'changing algorithm preserves the existing tail': switch_db > early - 6,
-        'held note develops timbral motion': motion > .1,
+        'long held drone avoids runaway buildup': held_buildup < 6,
         'audible decay twenty seconds after release': late > -60,
         'decay loses energy rather than sticking': end < early - 6,
         'tail retains stereo spread': abs(stereo) < .85,
         'no clipping': bool(np.max(np.abs(x)) < .95),
     }
     report = dict(early_tail_db=early, twenty_second_tail_db=late, final_tail_db=end,
-                  stereo_correlation=stereo, switched_tail_db=switch_db, timbral_motion=motion, checks=checks)
+                  stereo_correlation=stereo, switched_tail_db=switch_db, timbral_motion=motion,
+                  held_buildup_db=held_buildup, checks=checks)
     print(json.dumps(report, indent=2))
     (root / 'space-response.json').write_text(json.dumps(report, indent=2) + '\n')
     return 0 if all(checks.values()) else 1

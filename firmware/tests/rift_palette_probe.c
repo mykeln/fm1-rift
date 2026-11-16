@@ -60,6 +60,13 @@ int main(int argc, char **argv)
     static const char *name[] = {"MORPH","SPAN","WARP","FIELD","TIME","FORM","FEED","FUSE","BASIS","CELL","MIX","SEED","SCAN"};
     for(uint32_t mode=0;mode<9;mode++) for(uint32_t control=0;control<13;control++) for(uint32_t hi=0;hi<2;hi++) {
         preset(mode); trk[0].p[id[control]]=hi?127:0;
+        /* Modulator tuning/wave only matter when PAIR crossmod is active. */
+        if(mode==0u && (id[control]==P_E2 || id[control]==P_LRATE)) trk[0].p[P_E3]=48;
+        if(mode==0u && (id[control]==P_E7 || id[control]==P_LPHASE)) trk[0].p[P_REV]=127;
+        if(mode==0u && id[control]==P_LPHASE) trk[0].p[P_E3]=48;
+        /* Both FIELD endpoints close a tonal source. Compare its LP/HP regions. */
+        if(id[control]==P_E4) trk[0].p[P_E4]=hi?96:32;
+        if(id[control]==P_E7) trk[0].p[P_E7]=hi?127:64;
         /* BASIS endpoints use two audible octaves, not a subsonic root. */
         if(id[control]==P_CHOR) trk[0].p[P_CHOR]=hi?48:36;
         snprintf(path,sizeof path,"%s/controls/%s-%s-%u.wav",argv[1],RIFT_MODES[mode],name[control],hi);

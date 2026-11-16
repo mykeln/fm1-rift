@@ -6,24 +6,14 @@ Peak concentration is energy within +/- 3 Hz of the strongest 16 separated
 spectral peaks. Diffuse broadband rumble scores lower than a pitched drone.
 Do not loudness-normalize the renders: buildup and bank balance must be visible.
 """
-import hashlib
 import json
 import sys
 import wave
 from pathlib import Path
 import numpy as np
 
-# 0.5 factory renders at root 36, SEED 24, SCAN 48. Protect the seven
-# successful sounds outside CLUSTER while revising its overlapping identity.
-PRESERVED = {
-    'PAIR-1': 'cf4696c0452011ffd85ed72c21f7812643903129a564d132d8d8a90a748962a4',
-    'SINES-1': '3aa976d273f8333f538a69ae0b69378106cdc03a9cec6a1ed9a5321ab76f6c08',
-    'WAVES-1': 'ae9828f9a120b41ce529db303ddca0f366d6b89a95bd8c947d92df675757fc5e',
-    'WAVES-2': 'f3d47967b2a3111dd674b03eca6ffb330b172430fa224c49ac3eb5980b6a9f92',
-    'CHORD-1': 'f0050807f02fd37f3e95e46d91bc509db32253557e3572946f478b39c6bac458',
-    'PARTIAL-1': '2838750f82f1364848c36afade076f53a9a8ab1f30ef6f21325a8698fa290f09',
-    'CROSS-1': 'ec0f085a4a8129aaf3ffea7f97d12d5af74e5366523225712a617bf314baf2bc',
-}
+# 0.7 intentionally changes macro semantics and all factory patches. Assess
+# sound/level properties rather than comparing hashes against the old DSP.
 
 
 def db(x):
@@ -76,13 +66,10 @@ def main():
               f"tonal={f['peak_concentration']:.2f}  treble={f['treble_fraction']:.3f}  sub={f['sub_fraction']:.3f}")
     checks = {'all 27 factory sounds rendered': len(report) == 27}
     for name, f in report.items():
-        if name in PRESERVED:
-            checks[f'{name} preserved exactly'] = hashlib.sha256((root/f'{name}.wav').read_bytes()).hexdigest() == PRESERVED[name]
-        else:
-            checks[f'{name} retains pitched definition'] = f['peak_concentration'] > .8
-            checks[f'{name} avoids subsonic dominance'] = f['sub_fraction'] < .08
-            checks[f'{name} avoids excessive treble'] = f['treble_fraction'] < .01
-            checks[f'{name} sustained level'] = -26 < f['rms_db'] < -12
+        checks[f'{name} retains pitched definition'] = f['peak_concentration'] > .8
+        checks[f'{name} avoids subsonic dominance'] = f['sub_fraction'] < .08
+        checks[f'{name} avoids excessive treble'] = f['treble_fraction'] < .01
+        checks[f'{name} sustained level'] = -26 < f['rms_db'] < -12
         checks[f'{name} bounded peaks'] = f['peak_db'] < -1
         checks[f'{name} bounded buildup'] = f['buildup_db'] < 6
     for mode in {n.rsplit('-', 1)[0] for n in report}:
